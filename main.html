@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
+
+  <title>Form</title>
+</head>
+
+<body>
+  <form>
+    <div class="form-row">
+      <div class="col-1">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" id="inputFirstName" placeholder="First name">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" id="inputLastName" placeholder="Last name">
+      </div>
+      <div class="col">
+        <input type="date" class="form-control" id="inputDateOfBirth" placeholder="Date of birth">
+      </div>
+      <div class="col">
+        <select class="custom-select mr-sm-2" id="inputGender">
+          <option selected>Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+      <div class="col-1">
+      </div>
+    </div>
+  </form>
+
+  <div class="form-row align-items-center">
+    <div class="col-auto my-1">
+      <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
+    </div>
+  </div>
+
+  <table class="table" id="outputTable">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+        <th scope="col">Gender</th>
+        <th scope="col">Date of Birth</th>
+        <th scope="col">Delete</th>
+        <th scope="col">Change</th>
+      </tr>
+    </thead>
+    <tbody id="outputTableBody">
+
+    </tbody>
+  </table>
+
+  <script>
+    var table = [];
+    var id = 0;
+    var inEditMode = false;
+    var editPerson;
+
+    document.getElementById("saveBtn").onclick = OnClickAdd;
+
+    function CreateRow(row, newPerson) {
+      AppendCol(row, id);
+      AppendCol(row, newPerson.valFirstName);
+      AppendCol(row, newPerson.valLastName);
+      AppendCol(row, newPerson.valGender);
+      AppendCol(row, newPerson.valDateOfBirth);
+
+      var valRemoveBtn = "remove";
+      AppendButton(row, id, valRemoveBtn);
+      var valEditBtn = "edit";
+      AppendButton(row, id, valEditBtn);
+    }
+
+    function EditRow(id, editPerson) {
+      var row = document.getElementById(id);
+      row.cells[1].innerText = editPerson.valFirstName;
+      row.cells[2].innerText = editPerson.valLastName;
+      row.cells[3].innerText = editPerson.valGender;
+      row.cells[4].innerText = editPerson.valDateOfBirth;
+    }
+
+    function AppendCol(row, textNode) {
+      var txtElement = document.createTextNode(textNode);
+      var tdElement = document.createElement("td");
+
+      tdElement.appendChild(txtElement);
+      row.appendChild(tdElement)
+    }
+
+    function AppendButton(row, id, userTextNode) {
+      var txt = document.createTextNode(userTextNode);
+      var btn = document.createElement("button");
+      btn.appendChild(txt);
+      btn.setAttribute("id", id);
+
+      if (userTextNode == "remove")
+        btn.onclick = OnClickRemove;
+      else if (userTextNode == "edit")
+        btn.onclick = OnClickEdit;
+
+      var tdBtn = document.createElement("td");
+      tdBtn.appendChild(btn);
+      row.appendChild(tdBtn);
+    }
+
+    function OnClickAdd() {
+      if (inEditMode == true) {
+        editPerson.valFirstName = document.getElementById("inputFirstName").value;
+        editPerson.valLastName = document.getElementById("inputLastName").value;
+        editPerson.valGender = document.getElementById("inputGender").value;
+        editPerson.valDateOfBirth = document.getElementById("inputDateOfBirth").value;
+
+
+        EditRow(editPerson.id, editPerson);
+        SetPersonById(editPerson.id);
+
+        inEditMode = false;
+
+      }
+      else {
+        id += 1;
+        var newPerson = {
+          valFirstName: document.getElementById("inputFirstName").value,
+          valLastName: document.getElementById("inputLastName").value,
+          valGender: document.getElementById("inputGender").value,
+          valDateOfBirth: document.getElementById("inputDateOfBirth").value,
+          id: id
+        }
+
+        var row = document.createElement("tr");
+        row.setAttribute("id", id);
+        CreateRow(row, newPerson);
+
+        var tableBody = document.getElementById("outputTableBody");
+        tableBody.appendChild(row);
+        table.push(newPerson);
+      }
+    }
+
+    function GetPersonById(id) {
+      for (var i = 0; i < table.length; i++) {
+        if (id == table[i].id)
+          return table[i];
+      }
+    }
+
+    function SetPersonById(id) {
+      for (var i = 0; i < table.length; i++) {
+        if (id == table[i].id)
+          table[i] = editPerson;
+      }
+    }
+
+    function RemoveElementById(id) {
+      for (var i = 0; i < table.length; i++) {
+        if (id == table[i].id)
+          table.splice(i, 1);
+      }
+    }
+
+    function OnClickRemove(event) {
+      event.target.parentElement.parentElement.remove();
+      var idEvent = parseInt(event.target.id);
+
+      RemoveElementById(idEvent);
+    }
+
+    function OnClickEdit(event) {
+      inEditMode = true;
+      var idEvent = parseInt(event.target.id);
+      var person = GetPersonById(idEvent);
+
+      document.getElementById('inputFirstName').value = person.valFirstName;
+      document.getElementById('inputLastName').value = person.valLastName;
+      document.getElementById('inputDateOfBirth').value = person.valDateOfBirth;
+      document.getElementById('inputGender').value = person.valGender;
+
+      editPerson = {
+        valFirstName: person.valFirstName,
+        valLastName: person.valLastName,
+        valGender: person.valGender,
+        valDateOfBirth: person.valDateOfBirth,
+        id: idEvent
+      }
+    }
+  </script>
+</body>
+
+</html>
